@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="王先帅 · 无人机避障、端到端飞行与安全控制">
+<link rel="canonical" href="https://www.wangxshuai.cc/">
+<meta property="og:url" content="https://www.wangxshuai.cc/">
+<meta property="og:title" content="王先帅的项目主页">
+<link rel="icon" href="avatar.jpg">
+<title>王先帅的项目主页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 左侧名片（头像、介绍、联系方式），右侧项目索引；配色取自头像：天蓝、雪白、铃铛金、鼻头红，深色模式是雪夜 */
+:root {
+  --bg: #e9f4fc;
+  --surface: #ffffff;
+  --ink: #0d2a44;
+  --muted: #557089;
+  --line: #cfe2f1;
+  --blue: #0a8ad6;
+  --blue-soft: #dcefff;
+  --red: #e0362c;
+  --gold: #e9a91b;
+  --ok: #1f8a4c;
+  --wip: #c27a00;
+  --font-display: "Baloo 2", "Noto Sans SC", system-ui, sans-serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1726; --surface: #112438; --ink: #e8f3fc; --muted: #93adc4; --line: #1f3a55;
+    --blue: #4db8f5; --blue-soft: #133652; --red: #ff6a5e; --gold: #f5c64a;
+    --ok: #74d39b; --wip: #f2b456; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1726; --surface: #112438; --ink: #e8f3fc; --muted: #93adc4; --line: #1f3a55;
+  --blue: #4db8f5; --blue-soft: #133652; --red: #ff6a5e; --gold: #f5c64a;
+  --ok: #74d39b; --wip: #f2b456; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+#snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 1120px; margin: 0 auto; padding-block: 48px 64px;
+  display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 56px; align-items: start;
+}
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0,1fr); gap: 40px; padding-block: 28px 48px; } }
+
+/* ---------- 名片 ---------- */
+.card { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); display: grid; gap: 26px; }
+@media (max-width: 860px) { .card { position: static; } }
+
+.avatar-box { position: relative; width: 120px; height: 120px; }
+.avatar {
+  width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block;
+  border: 4px solid var(--surface); box-shadow: 0 0 0 3px var(--red);
+}
+.avatar-box::after { /* 小金铃点缀 */
+  content: ""; position: absolute; right: 4px; bottom: 6px; width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6 0 18%, transparent 20%), var(--gold);
+  border: 3px solid var(--surface);
+}
+.name { font-family: var(--font-display); font-weight: 800; font-size: 38px; line-height: 1.1; margin: 18px 0 6px; }
+.role { display: flex; flex-wrap: wrap; gap: 6px; }
+.role span { font-size: 13px; font-weight: 500; color: var(--blue); background: var(--blue-soft); padding: 2px 10px; border-radius: 999px; }
+.bio { color: var(--muted); margin: 14px 0 0; max-width: 36em; }
+.now { margin-top: 12px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.now i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex: none; }
+@media (prefers-reduced-motion: no-preference) { .now i { animation: pulse 2s infinite; } }
+@keyframes pulse { 50% { opacity: .35; } }
+
+.label { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 10px; }
+
+.contacts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.contacts li {
+  display: grid; grid-template-columns: 58px minmax(0,1fr) auto; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.c-kind { font-size: 13px; color: var(--muted); }
+.c-val { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; user-select: all; }
+.c-val a { text-decoration: none; border-bottom: 1px solid var(--line); }
+.c-val a:hover { border-color: var(--blue); color: var(--blue); }
+.copy {
+  font: 500 12px var(--font-body); color: var(--blue);
+  background: transparent; border: 1px solid var(--line); border-radius: 999px;
+  padding: 3px 10px; cursor: pointer; white-space: nowrap;
+}
+.copy:hover { border-color: var(--blue); }
+.copy.done { background: var(--blue-soft); border-color: transparent; }
+
+.skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.skills span { font-family: var(--font-mono); font-size: 12px; padding: 3px 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+.focus { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.focus li::before { content: "●"; color: var(--gold); font-size: 9px; margin-right: 8px; vertical-align: 2px; }
+
+/* ---------- 项目 ---------- */
+.head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.head h2 { font-family: var(--font-display); font-weight: 800; font-size: 28px; margin: 0; line-height: 1.2; }
+.head h2 small { font-family: var(--font-mono); font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button {
+  font: 500 13px var(--font-body); color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 14px; cursor: pointer;
+}
+.filters button[aria-pressed="true"] { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+.projects { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.proj {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+  padding: 20px 22px; display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 4px 18px;
+  transition: border-color .15s, transform .15s;
+}
+.proj:hover { border-color: var(--blue); }
+@media (prefers-reduced-motion: no-preference) { .proj:hover { transform: translateY(-2px); } }
+.p-year { font-family: var(--font-mono); font-size: 13px; color: var(--muted); padding-top: 4px; font-variant-numeric: tabular-nums; }
+.p-body { min-width: 0; display: grid; gap: 8px; }
+.p-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.p-title { font-size: 18px; font-weight: 700; margin: 0; }
+.status { font-family: var(--font-mono); font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.status.live { color: var(--ok); } .status.wip { color: var(--wip); } .status.archived { color: var(--muted); }
+.p-desc { margin: 0; color: var(--muted); max-width: 62ch; }
+.media { border-radius: 12px; overflow: hidden; background: var(--blue-soft); max-width: 100%; }
+.media video, .media img { display: block; width: 100%; max-height: 360px; object-fit: cover; }
+.p-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags span { font-family: var(--font-mono); font-size: 12px; color: var(--blue); background: var(--blue-soft); padding: 2px 8px; border-radius: 5px; }
+.links { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; font-weight: 500; }
+.links a { text-decoration: none; }
+.links a::after { content: " ↗"; color: var(--red); }
+.links a:hover { color: var(--blue); }
+@media (max-width: 520px) {
+  .proj { grid-template-columns: minmax(0,1fr); padding: 18px; }
+  .p-year { padding: 0; }
+}
+.note { font-size: 12px; color: var(--muted); margin: 0 0 14px; }
+.empty { color: var(--muted); padding: 24px 0; }
+footer { grid-column: 1 / -1; font-size: 12px; color: var(--muted); font-family: var(--font-mono); border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="wrap">
+  <aside class="card">
+    <div>
+      <div class="avatar-box"><img class="avatar" id="avatar" alt="头像" src="avatar.jpg"></div>
+      <h1 class="name" id="name"></h1>
+      <div class="role" id="role"></div>
+      <p class="bio" id="bio"></p>
+      <div class="now"><i></i><span id="now"></span></div>
+    </div>
+
+    <section>
+      <p class="label">联系方式</p>
+      <ul class="contacts" id="contacts"></ul>
+    </section>
+
+    <section>
+      <p class="label">技术栈与方向</p>
+      <div class="skills" id="skills"></div>
+      <ul class="focus" id="focus"></ul>
+    </section>
+  </aside>
+
+  <main>
+    <div class="head">
+      <h2>我的项目<small id="count"></small></h2>
+      <div class="filters" id="filters" role="group" aria-label="按类别筛选"></div>
+    </div>
+    <ul class="projects" id="projects"></ul>
+  </main>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* ================================================================
+   只需修改这里的内容
+   ================================================================ */
+const PROFILE = {
+  name: "王先帅",
+  roles: ["无人机", "机器人", "ROS"],
+  bio: "专注无人机自主飞行：避障算法、端到端飞行与安全控制。喜欢把算法放到真机上验证。",
+  now: "最近在写论文"
+};
+
+const CONTACTS = [
+  { kind: "邮箱",   value: "wangxshao@gmail.com" },
+  { kind: "抖音",   value: "100aiqy" },
+  { kind: "GitHub", value: "github.com/wateryman", href: "https://github.com/wateryman" },
+  { kind: "微信",   value: "ShuaishuaiTintin123" }
+];
+
+const SKILLS = ["ROS", "Python", "UAV"];
+const FOCUS = ["无人机避障算法开发", "端到端飞行", "安全控制"];
+
+/* 每个项目可选：
+   video: 视频地址（mp4 文件直链，页面里直接播放）
+   poster: 视频封面或项目截图
+   links: 外链，比如源码、B站/抖音演示视频、论文 */
+const PROJECTS = [
+  { year: "C++", title: "YOPO_ws 无人机避障与视觉跟随", category: "避障与控制",
+    desc: "基于 YOPO 的无人机避障规划工作空间，包含规划、控制器和仿真器三部分。so3_control 根据位置信息输出电机指令，视觉定位使用 VINS-Mono / VINS-Fusion。",
+    tags: ["ROS", "YOPO", "SO(3) 控制", "VINS"], status: "wip",
+    links: [{ text: "源码", href: "https://github.com/wateryman/YOPO_ws" }] },
+  { year: "Python", title: "无人机目标检测与跟踪", category: "视觉感知",
+    desc: "基于 YOLOv8 的无人机视角目标检测与跟踪，包含训练脚本、检测工具和主程序。",
+    tags: ["Python", "YOLOv8", "Ultralytics"],
+    links: [{ text: "源码", href: "https://github.com/wateryman/UAVtrackingAndOptimization" }] },
+  { year: "Python", title: "APMCM 数学建模：关税与贸易分析", category: "数学建模",
+    desc: "亚太地区大学生数学建模竞赛 C 题，围绕关税政策做数据分析与博弈建模，含大豆、芯片贸易和拉弗曲线等分析图。",
+    tags: ["Python", "数据分析", "博弈模型"],
+    links: [{ text: "源码", href: "https://github.com/wateryman/APMCM-git-wlz-C" }] },
+  { year: "Python", title: "APMCM 数学建模：四问求解", category: "数学建模",
+    desc: "一道建模赛题的完整求解：四个子问题的 Python 程序、逐题解答文档和解题流程分析。",
+    tags: ["Python", "优化建模"],
+    links: [{ text: "源码", href: "https://github.com/wateryman/APMCM-git-wlzl" }] }
+];
+/* ================================================================ */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const STATUS = { live: "已完成", wip: "进行中", archived: "已归档" };
+
+$("name").textContent = PROFILE.name;
+$("role").innerHTML = PROFILE.roles.map(r => `<span>${esc(r)}</span>`).join("");
+$("bio").textContent = PROFILE.bio;
+$("now").textContent = PROFILE.now;
+$("foot").textContent = `© ${new Date().getFullYear()} ${PROFILE.name}`;
+
+$("contacts").innerHTML = CONTACTS.map((c, i) => `
+  <li>
+    <span class="c-kind">${esc(c.kind)}</span>
+    <span class="c-val">${c.href ? `<a href="${esc(c.href)}" target="_blank" rel="noopener">${esc(c.value)}</a>` : esc(c.value)}</span>
+    <button class="copy" type="button" id="copy-${i}" data-i="${i}">复制</button>
+  </li>`).join("");
+
+$("contacts").addEventListener("click", e => {
+  const btn = e.target.closest(".copy"); if (!btn) return;
+  const text = CONTACTS[btn.dataset.i].value;
+  const done = () => { btn.textContent = "已复制"; btn.classList.add("done");
+    setTimeout(() => { btn.textContent = "复制"; btn.classList.remove("done"); }, 1600); };
+  const fallback = () => {
+    const r = document.createRange(); r.selectNodeContents(btn.previousElementSibling);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "已选中";
+  };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch { fallback(); }
+});
+
+$("skills").innerHTML = SKILLS.map(s => `<span>${esc(s)}</span>`).join("");
+$("focus").innerHTML = FOCUS.map(s => `<li>${esc(s)}</li>`).join("");
+
+const cats = ["全部", ...new Set(PROJECTS.map(p => p.category))];
+let active = "全部";
+try { const saved = localStorage.getItem("pf-filter"); if (cats.includes(saved)) active = saved; } catch {}
+
+function media(p) {
+  if (p.video) return `<div class="media"><video controls preload="metadata" playsinline ${p.poster ? `poster="${esc(p.poster)}"` : ""} src="${esc(p.video)}"></video></div>`;
+  if (p.poster) return `<div class="media"><img src="${esc(p.poster)}" alt="${esc(p.title)} 截图" loading="lazy"></div>`;
+  return "";
+}
+function render() {
+  $("filters").innerHTML = cats.map((c, i) =>
+    `<button type="button" id="f-${i}" aria-pressed="${c === active}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const list = active === "全部" ? PROJECTS : PROJECTS.filter(p => p.category === active);
+  $("count").textContent = `${list.length} / ${PROJECTS.length}`;
+  $("projects").innerHTML = list.length ? list.map(p => `
+    <li class="proj">
+      <div class="p-year">${esc(p.year)}</div>
+      <div class="p-body">
+        <div class="p-top">
+          <h3 class="p-title">${esc(p.title)}</h3>
+          ${p.status ? `<span class="status ${esc(p.status)}">${STATUS[p.status] || esc(p.status)}</span>` : ""}
+        </div>
+        <p class="p-desc">${esc(p.desc)}</p>
+        ${media(p)}
+        <div class="p-meta">
+          <div class="tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>
+          <div class="links">${(p.links || []).map(l => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.text)}</a>`).join("")}</div>
+        </div>
+      </div>
+    </li>`).join("") : `<li class="empty">这个类别下还没有项目。</li>`;
+}
+$("filters").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  active = b.dataset.c;
+  try { localStorage.setItem("pf-filter", active); } catch {}
+  render();
+});
+render();
+
+/* 轻量飘雪背景，减少动态效果时关闭 */
+(function () {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("snow"), ctx = cv.getContext("2d");
+  let W, H, flakes;
+  const color = () => getComputedStyle(document.documentElement).getPropertyValue("--blue").trim();
+  function size() {
+    W = cv.width = innerWidth; H = cv.height = innerHeight;
+    flakes = Array.from({ length: Math.min(70, Math.round(W / 18)) }, () => ({
+      x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 2.4, v: .3 + Math.random() * .7, d: Math.random() * 6
+    }));
+  }
+  size(); addEventListener("resize", size);
+  (function tick(t) {
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = color(); ctx.globalAlpha = .28;
+    for (const f of flakes) {
+      f.y += f.v; f.x += Math.sin(t / 1600 + f.d) * .3;
+      if (f.y > H + 4) { f.y = -4; f.x = Math.random() * W; }
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  })(0);
+})();
+</script>
+
+</body>
+</html>
